@@ -19,7 +19,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class MainActivity extends Activity {
         login.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 new runLogin().execute();
-                Toast.makeText(getApplicationContext(), "Logging In...", Toast.LENGTH_LONG).show();
+
             }
         });
 
@@ -66,6 +65,7 @@ public class MainActivity extends Activity {
     }
 
     public void callMenu(){
+        Toast.makeText(getApplicationContext(), "Logging In...", Toast.LENGTH_LONG).show();
         Intent intent = new Intent(this, MenuActivity.class);
         startActivity(intent);
     }
@@ -80,56 +80,40 @@ public class MainActivity extends Activity {
                 HttpClient httpclient = new DefaultHttpClient();
                 HttpPost httppost = new HttpPost("http://95.44.212.163:5000/v3/auth/tokens");
 
-                //Building the json object, nesting all the json objects into one because parsing a single string causes errors
-                JSONObject auth = new JSONObject();
-                JSONObject identity = new JSONObject();
-                JSONObject user = new JSONObject();
-                JSONObject other = new JSONObject();
-                JSONObject credentials = new JSONObject();
-
-              /*  credentials.put("name","admin");
-                credentials.put("password","openstack");
-                user.put("user", credentials);
-                other.put("methods",["password"]){};
-                other.put("password", user);
-                identity.put("identity", other);
-                auth.put("auth", identity);*/
-
+                //Building the json object
                 String a ="{\n" +
-                        "    \"auth\": {\n" +
+                        "  \"auth\":{\n"+
                         "        \"identity\": {\n" +
                         "            \"methods\": [\n" +
                         "                \"password\"\n" +
                         "            ],\n" +
                         "            \"password\": {\n" +
                         "                \"user\": {\n" +
-                        "                    \"name\": \"admin\",\n" +
+                        "                    \"id\": \"216fe186a8bc4ee2809fac384dea9fe1\",\n" +
                         "                    \"password\": \"openstack\"\n" +
                         "                }\n" +
                         "            }\n" +
                         "        }\n" +
-                        "    }\n" +
+                        "     }\n" +
                         "}";
-                auth.put("auth",a);
+                JSONObject auth1 = new JSONObject(a);
 
-                Log.i("TAG", "passing your data"+auth.toString());
+                Log.i("TAG", "passing your data"+auth1.toString());
 
-                StringEntity params1 = new StringEntity(auth.toString());
-                params1.setContentEncoding("UTF-8");
-                params1.setContentType("application/json");
+                StringEntity auth = new StringEntity(auth1.toString());
+                auth.setContentEncoding("UTF-8");
+                auth.setContentType("application/json");
 
                 httppost.setHeader("Content-type", "application/json");
-                httppost.setEntity((params1));
+                httppost.setEntity(auth);
 
                 // Execute HTTP Post Request
                 HttpResponse response = httpclient.execute(httppost);
                 Log.i("TAG", "Server response is "+response.getEntity());
-
-                String token = response.toString();
                 Log.i("TAG", "Server response is "+response.getStatusLine().getStatusCode()+" " +response.getStatusLine().getReasonPhrase());// Server response cannont be of type JSONObject
 
                 //Check if response from http request is accepted and start menu activity
-                if (true)
+                if (response.getStatusLine().getStatusCode() == 201)
                 {
                     HttpEntity entity = response.getEntity();
                     String re = EntityUtils.toString(entity);
@@ -140,6 +124,8 @@ public class MainActivity extends Activity {
                     Log.e("TAG", "Http entity : " + re);
                     callMenu();
                 }
+                    //use onpreexicute and on post execute to inteface with the ui thread
+
             }catch (IOException e) {
                 Log.e("TAG", "IOException" + e.toString());
             } catch (JSONException e) {
