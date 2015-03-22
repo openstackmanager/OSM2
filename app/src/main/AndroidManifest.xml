@@ -26,6 +26,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.project.myapplication2.MainActivity" />
         </activity>
+        <activity
+            android:name=".MenuActivityNavDrawer"
+            android:label="@string/title_activity_menu_activity_nav_drawer" >
+        </activity>
     </application>
 
 </manifest>

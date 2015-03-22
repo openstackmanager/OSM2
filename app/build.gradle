@@ -17,12 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    packagingOptions{
-          exclude 'META-INF/LICENSE'
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
     }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile files('libs/activation-1.1.jar')
+    compile 'com.android.support:support-v4:21.+'
 }

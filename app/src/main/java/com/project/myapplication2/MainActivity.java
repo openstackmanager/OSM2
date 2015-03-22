@@ -5,11 +5,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
@@ -31,11 +33,37 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final Button login = (Button) findViewById(R.id.button1);
+        final Button button2 = (Button) findViewById(R.id.button);
+        final TextView endpoint1 =  (TextView)findViewById(R.id.editText);
+        final TextView tenant1 =  (TextView)findViewById(R.id.editText2);
+        final TextView username1 =  (TextView)findViewById(R.id.editText3);
+        final TextView password1 =  (TextView)findViewById(R.id.editText4);
 
+        username1.setText("216fe186a8bc4ee2809fac384dea9fe1");
+
+        final ConnectionManager session = new ConnectionManager();
         login.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                new runLogin().execute();
 
+                String endpoint = endpoint1.getText().toString();
+                String tenant = tenant1.getText().toString();
+                String username =username1.getText().toString() ;
+                String password = password1.getText().toString();
+
+                Log.i("TAG", "passing your data" + endpoint +" "+ tenant+ " "+ username +" "+ password);
+
+                //passing login params to Asynctask
+                session.login(endpoint,tenant,username,password);
+                Toast.makeText(getApplicationContext(), "Logging In...", Toast.LENGTH_LONG).show();
+                Log.e("TAG", "Http entity from main activity : " + session.getToken());
+
+            }
+        });
+
+        button2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v){
+             session.getInstances();
+             Log.e("TAG", "Http entity from main activity : " + session.getInstances());
             }
         });
 
@@ -65,73 +93,9 @@ public class MainActivity extends Activity {
     }
 
     public void callMenu(){
-        Toast.makeText(getApplicationContext(), "Logging In...", Toast.LENGTH_LONG).show();
-        Intent intent = new Intent(this, MenuActivity.class);
+
+        Intent intent = new Intent(this, MenuActivityNavDrawer.class);
         startActivity(intent);
     }
 
-    public class runLogin extends AsyncTask<Void,String,Void> {
-
-         @Override
-         protected Void doInBackground(Void... params) {
-
-
-            try {
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost("http://95.44.212.163:5000/v3/auth/tokens");
-
-                //Building the json object
-                String a ="{\n" +
-                        "  \"auth\":{\n"+
-                        "        \"identity\": {\n" +
-                        "            \"methods\": [\n" +
-                        "                \"password\"\n" +
-                        "            ],\n" +
-                        "            \"password\": {\n" +
-                        "                \"user\": {\n" +
-                        "                    \"id\": \"216fe186a8bc4ee2809fac384dea9fe1\",\n" +
-                        "                    \"password\": \"openstack\"\n" +
-                        "                }\n" +
-                        "            }\n" +
-                        "        }\n" +
-                        "     }\n" +
-                        "}";
-                JSONObject auth1 = new JSONObject(a);
-
-                Log.i("TAG", "passing your data"+auth1.toString());
-
-                StringEntity auth = new StringEntity(auth1.toString());
-                auth.setContentEncoding("UTF-8");
-                auth.setContentType("application/json");
-
-                httppost.setHeader("Content-type", "application/json");
-                httppost.setEntity(auth);
-
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                Log.i("TAG", "Server response is "+response.getEntity());
-                Log.i("TAG", "Server response is "+response.getStatusLine().getStatusCode()+" " +response.getStatusLine().getReasonPhrase());// Server response cannont be of type JSONObject
-
-                //Check if response from http request is accepted and start menu activity
-                if (response.getStatusLine().getStatusCode() == 201)
-                {
-                    HttpEntity entity = response.getEntity();
-                    String re = EntityUtils.toString(entity);
-                        /*
-                        JSONObject jsonResponse = new JSONObject(new String(buffer));
-                        JSONArray mtUsers = jsonResponse.getJSONArray("GetUserNamesResult");
-                        */
-                    Log.e("TAG", "Http entity : " + re);
-                    callMenu();
-                }
-                    //use onpreexicute and on post execute to inteface with the ui thread
-
-            }catch (IOException e) {
-                Log.e("TAG", "IOException" + e.toString());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-             return null;
-         }
-     }
  }
